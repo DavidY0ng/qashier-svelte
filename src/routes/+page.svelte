@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  let carParkData = null;
+  let carParkData = {};
   async function carData() {
   try {
     const res = await fetch('https://api.data.gov.sg/v1/transport/carpark-availability', {
@@ -95,21 +95,37 @@
   } catch (error) {
     console.error('Error fetching data:', error);
   }
-  
-
-  // Call the fetchData function using onMount
-
 }
-async function updateCarData() {
-    carParkData = await fetchCarData();
-  }
 
 onMount(async () => {
     carParkData = await carData();
-    const interval = setInterval(updateCarData, 1000);
+    const interval = setInterval(carData, 60000);
   });
 
 </script>
 
 <h1>CARPARK DATA</h1>
-<pre>{JSON.stringify(carParkData, null, 2)}</pre>
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Highest Available Lots</th>
+      <th>Highest Available Carpark Numbers</th>
+      <th>Lowest Available Lots</th>
+      <th>Lowest Available Carpark Numbers</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#each Object.keys(carParkData) as category}
+      {#if carParkData[category]}
+        <tr>
+          <td>{category}</td>
+          <td>{carParkData[category].highestAvailableLots}</td>
+          <td>{carParkData[category].highestAvailableCarparkNumbers.join(", ")}</td>
+          <td>{carParkData[category].lowestAvailableLots}</td>
+          <td>{carParkData[category].lowestAvailableCarparkNumbers.join(", ")}</td>
+        </tr>
+      {/if}
+    {/each}
+  </tbody>
+</table>
